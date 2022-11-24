@@ -20,7 +20,7 @@
                             <tr>
                                 <td>{{ $index+1 }}</td>
                                 <td>{{ $product->name }}</td>
-                                <td><img src="{{ asset('storage/images/'.$product->image) }}" alt="Product Image" class="img-fluid"></td>
+                                <td><img src="{{ asset('storage/images/'.$product->image) }}" alt="Product Image" style="object-fit:contain;width:100%;height:125px"></td>
                                 <td>{{ $product->description }}</td>
                                 <td>{{ $product->qty }}</td>
                                 <td>{{ $product->price }}</td>

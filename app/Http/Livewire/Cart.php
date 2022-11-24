@@ -5,16 +5,25 @@ use Carbon\Carbon;
 
 
 use Livewire\Component;
+use Livewire\WithPagination;
 use App\Http\Livewire\Cart;
 use App\Models\ProductModel;
 
 
 class Cart extends Component
 {
+    use WithPagination;
+    protected $paginationTheme = 'bootstrap';
     public $tax = "0%";
+    public $search ;
+
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
     public function render()
     {
-        $products = ProductModel::orderBy('created_at','DESC')->get();
+        $products = ProductModel::where('name', 'like', '%'.$this->search.'%')->orderBy('created_at','DESC')->paginate(12);
         $condition = new \Darryldecode\Cart\CartCondition([
             'name' => 'pajak',
             'type' => 'tax',
@@ -61,16 +70,22 @@ class Cart extends Component
 
     public function addItem($id){
         $rowId = "Cart". $id;
+        $idProduct = substr($rowId, 4,5);
+        $product = ProductModel::find($idProduct);
         $cart = \Cart::session(Auth()->id())->getContent();
         $cekItemId = $cart->whereIn('id', $rowId);
 
         if($cekItemId->isNotEmpty()) {
-            \Cart::session(Auth()->id())->update($rowId,[
-                'quantity' => [
-                    'relative' => true,
-                    'value' => 1
-                ]
-            ]);
+            if($product->qty == $cekItemId[$rowId]->quantity) {
+                session()->flash('error', 'Jumlah Item Kurang');
+            } else {
+                \Cart::session(Auth()->id())->update($rowId,[
+                    'quantity' => [
+                        'relative' => true,
+                        'value' => 1
+                    ]
+                ]);
+            }
         } else {
             $product = ProductModel::findOrFail($id);
             \Cart::session(Auth()->id())->add([
